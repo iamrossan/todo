@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:todo_list/home_page.dart';
 import 'package:todo_list/signin_page.dart';
 
-void main(List<String> args) {
+void main() {
   runApp(const MaterialApp(
     home: Home_Page(),
     debugShowCheckedModeBanner: false,
