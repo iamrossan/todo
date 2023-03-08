@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 // ignore: camel_case_types
 class Home_Page extends StatefulWidget {
@@ -11,7 +14,78 @@ class Home_Page extends StatefulWidget {
 // ignore: camel_case_types
 class _Home_PageState extends State<Home_Page> {
   DateTime? _selectedDate;
+  final _emailTextController = TextEditingController();
 
+  List<Todo> todos = [];
+
+  String todo = "";
+
+  List<Widget> getTodos() {
+    List<Widget> todo = [];
+    for (int i = 0; i < todos.length; i++) {
+      int todoId = i + 1;
+
+      var listtile = Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(
+              10.0,
+            ),
+            color: Colors.white,
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.grey,
+                blurRadius: 1,
+                spreadRadius: 1,
+                offset: Offset(1, 1),
+              ),
+            ],
+          ),
+          child: ListTile(
+            enabled: todos[i].isCompleted ? false : true,
+            trailing: Switch(
+              value: todos[i].isCompleted,
+              onChanged: (newValue) {
+                setState(() {
+                  todos[i].isCompleted = newValue;
+                  Timer(
+                    const Duration(milliseconds: 700),
+                    () {
+                      setState(() {
+                        if (todos[i].isCompleted) {
+                          todos.add(todos[i]);
+                          todos.removeAt(i);
+                        } else {
+                          todos.insert(0, todos[i]);
+                          todos.removeAt(i + 1);
+                        }
+                      });
+                    },
+                  );
+                });
+              },
+            ),
+            leading: CircleAvatar(
+              child: Text(todoId.toString()),
+            ),
+            title: Text(todos[i].todo),
+            subtitle: Text("${todos[i].date}"),
+          ),
+        ),
+      );
+      todo.add(listtile);
+    }
+    return todo;
+  }
+
+  void addToDo({required DateTime date, required String todo}) {
+    setState(() {
+      todos.add(Todo(date: date, todo: todo, isCompleted: false));
+    });
+  }
+
+  DateTime currentTime = DateTime.now();
   Future<void> _datePicker(BuildContext context) async {
     await showDatePicker(
       context: context,
@@ -41,6 +115,10 @@ class _Home_PageState extends State<Home_Page> {
                   Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: TextField(
+                      onChanged: (value) {
+                        todo = value;
+                      },
+                      controller: _emailTextController,
                       decoration: InputDecoration(
                         label: const Text("New Task"),
                         hintText: "New Task..",
@@ -94,7 +172,11 @@ class _Home_PageState extends State<Home_Page> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    addToDo(date: _selectedDate!, todo: todo);
+                    _emailTextController.clear();
+                    Navigator.of(context).pop();
+                  },
                   child: const Text("OK"),
                 ),
                 TextButton(
@@ -111,10 +193,6 @@ class _Home_PageState extends State<Home_Page> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: const Icon(
-          Icons.settings,
-          color: Colors.blue,
-        ),
         centerTitle: true,
         title: const Text(
           "All Task",
@@ -124,33 +202,11 @@ class _Home_PageState extends State<Home_Page> {
         backgroundColor: Colors.white,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: ListView.builder(
-          itemCount: 8,
-          itemBuilder: ((context, index) {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12.0),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.grey,
-                        blurRadius: 5.0,
-                        spreadRadius: 1.0,
-                        offset: Offset(2, 2),
-                      )
-                    ]),
-                child: const ListTile(
-                  title: Text("text 1"),
-                  subtitle: Text("2022/10/10"),
-                ),
-              ),
-            );
-          }),
-        ),
-      ),
+          padding: const EdgeInsets.all(12.0),
+          child: ListView(
+            physics: const BouncingScrollPhysics(),
+            children: getTodos(),
+          )),
       floatingActionButton: FloatingActionButton.small(
         onPressed: () => _show(context),
         backgroundColor: const Color.fromARGB(255, 76, 3, 125),
@@ -162,4 +218,11 @@ class _Home_PageState extends State<Home_Page> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
+}
+
+class Todo {
+  String todo;
+  DateTime date;
+  bool isCompleted;
+  Todo({required this.todo, required this.date, required this.isCompleted});
 }
