@@ -43,9 +43,6 @@ class _TodoListState extends State<TodoList> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(),
-              // SizedBox(
-              //   width: 250,
-              // ),
               Padding(
                 padding: EdgeInsets.only(
                   left: MediaQuery.of(context).size.width / 3.2,
